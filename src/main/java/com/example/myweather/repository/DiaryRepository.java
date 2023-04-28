@@ -1,4 +1,4 @@
 package com.example.myweather.repository;
 
-public class DiaryRepository {
+public interface DiaryRepository {
 }
