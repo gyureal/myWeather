@@ -1,6 +1,8 @@
 package com.example.myweather.service;
 
-import com.fasterxml.jackson.core.util.BufferRecycler;
+import com.example.myweather.domain.Diary;
+import com.example.myweather.repository.DiaryRepository;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -12,7 +14,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,10 +23,24 @@ public class DiaryService {
     @Value("${openweathermap.key}")
     String apiKey;
 
+    private final DiaryRepository diaryRepository;
+
+    public DiaryService(DiaryRepository diaryRepository) {
+        this.diaryRepository = diaryRepository;
+    }
+
     public void createDiary(LocalDate date, String text) {
         String weatherString = getWeatherString();
 
         Map<String, Object> parseWeather = parseWeather(weatherString);
+
+        diaryRepository.save(Diary.builder()
+                .weather(parseWeather.get("main").toString())
+                .icon(parseWeather.get("icon").toString())
+                .temperature((Double) parseWeather.get("temp"))
+                .text(text)
+                .date(LocalDate.now())
+                .build());
     }
 
     private String getWeatherString() {
@@ -44,7 +59,7 @@ public class DiaryService {
             }
             String inputLine;
             StringBuilder response = new StringBuilder();
-            while((inputLine = br.readLine()) != null) {
+            while ((inputLine = br.readLine()) != null) {
                 response.append(inputLine);
             }
             br.close();
@@ -61,16 +76,17 @@ public class DiaryService {
 
         try {
             jsonObject = (JSONObject) jsonParser.parse(jsonString);
-        } catch (ParseException e){
+        } catch (ParseException e) {
             throw new RuntimeException(e);
         }
 
         Map<String, Object> resultMap = new HashMap<>();
         JSONObject main = (JSONObject) jsonObject.get("main");
         resultMap.put("temp", main.get("temp"));
-        JSONObject weather = (JSONObject) jsonObject.get("weather");
-        resultMap.put("main", main.get("main"));
-        resultMap.put("icon", main.get("icon"));
+        JSONArray weatherArray = (JSONArray) jsonObject.get("weather");
+        JSONObject weather = (JSONObject) weatherArray.get(0);
+        resultMap.put("main", weather.get("main"));
+        resultMap.put("icon", weather.get("icon"));
         return resultMap;
     }
 }

@@ -1,4 +1,7 @@
 package com.example.myweather.repository;
 
-public interface DiaryRepository {
+import com.example.myweather.domain.Diary;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface DiaryRepository extends JpaRepository<Diary, Integer> {
 }
