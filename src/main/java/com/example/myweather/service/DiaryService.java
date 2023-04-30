@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -39,7 +40,7 @@ public class DiaryService {
                 .icon(parseWeather.get("icon").toString())
                 .temperature((Double) parseWeather.get("temp"))
                 .text(text)
-                .date(LocalDate.now())
+                .date(date)
                 .build());
     }
 
@@ -88,5 +89,13 @@ public class DiaryService {
         resultMap.put("main", weather.get("main"));
         resultMap.put("icon", weather.get("icon"));
         return resultMap;
+    }
+
+    public List<Diary> readDiary(LocalDate date) {
+        return diaryRepository.findAllByDate(date);
+    }
+
+    public List<Diary> readDiary(LocalDate startDate, LocalDate endDate) {
+        return diaryRepository.findAllByDateBetween(startDate, endDate);
     }
 }
