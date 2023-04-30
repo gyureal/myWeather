@@ -22,4 +22,8 @@ public class Diary {
 
     private LocalDate date;
 
+    public void modifyText(String text) {
+        this.text = text;
+    }
+
 }

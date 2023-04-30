@@ -8,6 +8,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -30,7 +31,8 @@ public class DiaryService {
         this.diaryRepository = diaryRepository;
     }
 
-    public void createDiary(LocalDate date, String text) {
+    @Transactional
+    public void saveDiary(LocalDate date, String text) {
         String weatherString = getWeatherString();
 
         Map<String, Object> parseWeather = parseWeather(weatherString);
@@ -42,6 +44,13 @@ public class DiaryService {
                 .text(text)
                 .date(date)
                 .build());
+    }
+
+    @Transactional
+    public void saveDiary(Integer id, String text) {
+        Diary diary = diaryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 ID입니다."));
+        diary.modifyText(text);
     }
 
     private String getWeatherString() {
@@ -97,5 +106,9 @@ public class DiaryService {
 
     public List<Diary> readDiary(LocalDate startDate, LocalDate endDate) {
         return diaryRepository.findAllByDateBetween(startDate, endDate);
+    }
+
+    public void deleteDiary(Integer id) {
+        diaryRepository.deleteById(id);
     }
 }
